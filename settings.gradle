@@ -1,0 +1,2 @@
+rootProject.name = "GS SDK Demo App"
+include ':app'
