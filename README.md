@@ -98,7 +98,7 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
  val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()))
  startActivityForResult(intent, requestCode)
 ```
-3) Start Bluetooth session after activity created
+4) Start Bluetooth session after activity created
 ```kotlin
 val bluetoothConnectSession = BluetoothConnectSession(this)
 //Setup session listener	
@@ -175,17 +175,17 @@ bluetoothConnectSession.sessionListener =object : SessionListener{
 bluetoothConnectSession.startSession()
 ```
 
-4) Pair Bluetooth device
+5) Pair Bluetooth device
 
-5) Connect Bluetooth device
+6) Connect Bluetooth device
 ```kotlin
 val device = bluetoothAdapter!!.getRemoteDevice(selectedDeviceAddress)
 bluetoothConnectSession.bluetoothDeviceToConnect = device
 bluetoothConnectSession.connect()
 ```
 
-6) Stop Bluetooth session after activity is destroy
-```java
+7) Stop Bluetooth session after activity is destroy
+```kotlin
 //Send current bluetooth session
 bluetoothConnectSession.endSession()
 ```
