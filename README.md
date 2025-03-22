@@ -25,7 +25,7 @@ allprojects {
 ```groovy
 dependencies 
 {
-    implementation files('libs/generalscan-sdk.aar')
+    implementation files('libs/scannersdk-release.aar')
 }
 ```
 
@@ -181,6 +181,7 @@ bluetoothConnectSession.startSession()
 ```kotlin
 val device = bluetoothAdapter!!.getRemoteDevice(selectedDeviceAddress)
 bluetoothConnectSession.bluetoothDeviceToConnect = device
+bluetoothConnectSession.deviceType = "BLE" //or "SPP"
 bluetoothConnectSession.connect()
 ```
 
