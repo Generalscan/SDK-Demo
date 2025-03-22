@@ -55,14 +55,14 @@ open class BaseActivity : AppCompatActivity() {
         setContentView(View.inflate(this, layoutResID, null))
     }
 
-    override fun setContentView(view: View, params: ViewGroup.LayoutParams) {
+    override fun setContentView(view: View?, params: ViewGroup.LayoutParams?) {
         super.setContentView(view, params)
         supportActionBar?.elevation = 0f
         rootView = view
         InjectUtility.initInjectedView(this)
     }
 
-    override fun setContentView(view: View) {
+    override fun setContentView(view: View?) {
         super.setContentView(view, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
         supportActionBar?.elevation = 0f
         rootView = view

@@ -17,8 +17,10 @@ import com.generalscan.sdkapp.support.utils.AppLogUtils
 import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.support.utils.PermissionUtils
 import com.generalscan.sdkapp.system.base.AppContext
+import com.generalscan.sdkapp.ui.activity.usb.UsbHostSettingActivity
 import com.generalscan.sdkapp.ui.activity.base.BaseActivity
 import com.generalscan.sdkapp.ui.activity.bluetooth.BluetoothMainActivity
+import com.generalscan.sdkapp.ui.activity.usb.UsbSerialMainActivity
 import java.util.ArrayList
 
 
@@ -68,6 +70,10 @@ class MainActivity : BaseActivity(), ActivityCompat.OnRequestPermissionsResultCa
             R.id.menu_id_connect_bluetooth -> {
                 val intent = Intent(this, BluetoothMainActivity::class.java)
                 startActivityForResult(intent, REQUEST_CONNECT_BLUETOOTH_DEVICE)
+            }
+            R.id.menu_id_connect_usb-> {
+                val intent = Intent(this, UsbSerialMainActivity::class.java)
+                startActivityForResult(intent, REQUEST_START_USBHOST_SERIVCE)
             }
         }
 

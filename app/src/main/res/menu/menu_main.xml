@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_id_connect_bluetooth"
-        android:title="@string/B_Connect"
         android:icon="@drawable/ic_bluetooth_pairing"
+        android:title="@string/B_Connect"
         app:showAsAction="always" />
     <item
         android:id="@+id/menu_id_connect_usb"
-        android:title="@string/usb_host"
         android:icon="@drawable/ic_usb_host"
-        app:showAsAction="always" android:visible="false" />
+        android:title="@string/usb_host"
+        app:showAsAction="always" />
 </menu>

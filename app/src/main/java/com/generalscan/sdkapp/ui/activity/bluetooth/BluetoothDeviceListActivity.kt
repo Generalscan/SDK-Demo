@@ -2,49 +2,35 @@ package com.generalscan.sdkapp.ui.activity.bluetooth
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothClass
-import android.bluetooth.BluetoothDevice
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.ViewGroup
-import android.widget.AdapterView.OnItemClickListener
-import android.widget.BaseAdapter
-import android.widget.ImageView
-import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatCheckBox
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.generalscan.sdkapp.R
-import com.generalscan.sdkapp.support.utils.AppLogUtils
+import com.generalscan.sdkapp.support.kotlinext.ifNullTrim
+import com.generalscan.sdkapp.support.kotlinext.textTrim
+import com.generalscan.sdkapp.support.pref.BluetoothPreferences
 import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.ui.activity.base.BaseActivity
 import com.generalscan.sdkapp.ui.fragments.BluetoothBleDeviceListFragment
 import com.generalscan.sdkapp.ui.fragments.BluetoothSppDeviceListFragment
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-
-
-import java.util.ArrayList
 
 @SuppressLint("MissingPermission")
 class BluetoothDeviceListActivity : BaseActivity() {
@@ -63,13 +49,26 @@ class BluetoothDeviceListActivity : BaseActivity() {
         mayRequestLocation()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_bluetooth_device_list, menu)
+        if(tabLayout.selectedTabPosition==1)
+        {
+            menu.findItem(R.id.menu_id_whitelist).isVisible = false
+        }
+        return super.onCreateOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> {
                 this.finish()
                 true
             }
-            else -> true
+            R.id.menu_id_whitelist -> {
+                configureWhitelist()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -78,10 +77,42 @@ class BluetoothDeviceListActivity : BaseActivity() {
         mayRequestLocation()
     }
 
+    /*
+   Configure device whitelist
+    */
+    private fun configureWhitelist() {
+        val inflater = this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val dialogView: View = inflater.inflate(R.layout.view_ble_whitelist_settings, null)
+
+        val txtDeviceWhiteList = dialogView.findViewById<AppCompatEditText>(R.id.edittext_bluetooth_device_whitelist)
+        txtDeviceWhiteList.setText(BluetoothPreferences.deviceWhiteList)
+        val ckbAutoConnect = dialogView.findViewById<AppCompatCheckBox>(R.id.checkbox_auto_connect)
+        ckbAutoConnect.isChecked = BluetoothPreferences.isAutoConnect
+
+        val builder = AlertDialog.Builder(this)
+        //builder.setTitle("Navigate to Settings>System>About>(Status)>Bluetooth Address or click the 'ABOUT PHONE' button below. Then write down the Bluetooth address. Hit back button until return to this screen.Then type the address below.")
+        builder.setView(dialogView)
+        // Set up the buttons
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
+            try {
+                BluetoothPreferences.isAutoConnect = ckbAutoConnect.isChecked
+                BluetoothPreferences.deviceWhiteList = txtDeviceWhiteList.textTrim
+            } catch (e: Exception) {
+                e.printStackTrace()
+                MessageBox.showWarningMessage(this, e.message.ifNullTrim())
+            }
+        }
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.cancel()
+        }
+        val dialog = builder.create()
+        dialog.show()
+    }
     private fun mayRequestLocation() {
         if (Build.VERSION.SDK_INT >= 23) {
             val checkCallPhonePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
             if (checkCallPhonePermission != PackageManager.PERMISSION_GRANTED) {
+                //判断是否需要 向用户解释，为什么要申请该权限
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION))
                     Toast.makeText(this, R.string.ble_need, Toast.LENGTH_LONG).show()
                 ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), REQUEST_FINE_LOCATION)
@@ -101,7 +132,6 @@ class BluetoothDeviceListActivity : BaseActivity() {
         )
         val adapter = ViewPagerAdapter(supportFragmentManager, lifecycle)
         viewPager.adapter = adapter
-
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = words[position]
         }.attach()

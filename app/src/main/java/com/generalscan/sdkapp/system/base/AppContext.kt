@@ -13,10 +13,11 @@ class AppContext : Application() {
     private var hasBeenInitiated = false
     var appVersionName:String = ""
     var appVersionCode:Int = 0
-
+    lateinit var appPreferences: SharedAppPreference
     override fun onCreate() {
         super.onCreate()
         instance = this
+        appPreferences = SharedAppPreference(this)
         //init()
     }
 
@@ -61,6 +62,8 @@ class AppContext : Application() {
         //endregion
         lateinit var instance: AppContext
             private set
+
+
         //private lateinit var appPreferences: AppPreference
 
         fun initialSystemFiles() {

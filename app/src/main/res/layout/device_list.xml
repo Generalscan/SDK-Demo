@@ -21,6 +21,14 @@
 
 	</android.support.design.widget.AppBarLayout>
 	-->
+	<androidx.appcompat.widget.AppCompatEditText
+		android:id="@+id/edittext_search"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:inputType="text|textFilter"
+		android:singleLine="true"
+		android:layout_margin="15dp"
+		android:hint="Enter here to filter" />
 	<ListView
 	    android:id="@+id/list_devices"
 	    android:layout_width="match_parent"

@@ -26,6 +26,7 @@
     <string name="bluetooth_scanner">蓝牙扫描器</string>
     <string name="step_1">步骤一:</string>
     <string name="step_2">步骤二:</string>
+    <string name="step_3">步骤三:</string>
     <string name="next_step">下一步</string>
     <string name="scan_text">将二维码放入框内, 即可自动扫描</string>
     <string name="B_GoScanQR">二维码</string>
@@ -154,4 +155,12 @@
     <string name="permission_dialog_message_for_overlay">此应用需要在其他应用之上显示的权限才能显示底部任务栏。\n\n请点击 \"授予权限\" 并确保 \"允许在其他应用之上显示\" 已启用。</string>
     <string name="background_location_allow_all_the_time">总是允许</string>
     <string name="gs_is_old_firmware">旧固件</string>
+    <string name="connect_usb_device_with_otg">Connect to the scanner with an OTG cable</string>
+    <string name="device_info">Device Info</string>
+    <string name="device_path">Path:</string>
+    <string name="device_name">Name:</string>
+    <string name="device_manufacturer">MFR:</string>
+    <string name="device_model">Model:</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

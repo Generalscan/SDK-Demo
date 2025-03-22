@@ -3,16 +3,20 @@ package com.generalscan.sdkapp.ui.activity.bluetooth
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.core.view.isVisible
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatCheckBox
+import androidx.appcompat.widget.AppCompatEditText
 import com.generalscan.scannersdk.core.basic.SdkContext
 import com.generalscan.scannersdk.core.basic.interfaces.BluetoothPairListener
 import com.generalscan.scannersdk.core.basic.interfaces.CommunicateListener
@@ -25,6 +29,8 @@ import com.generalscan.scannersdk.core.session.bluetooth.utils.BluetoothUtils
 import com.generalscan.sdkapp.R
 import com.generalscan.sdkapp.support.inject.ViewInject
 import com.generalscan.sdkapp.support.kotlinext.ifNullTrim
+import com.generalscan.sdkapp.support.kotlinext.textTrim
+import com.generalscan.sdkapp.support.pref.BluetoothPreferences
 import com.generalscan.sdkapp.support.utils.AppLogUtils
 import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.support.utils.PermissionUtils
@@ -49,6 +55,9 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
     //region view injection
     @ViewInject(id = R.id.btnTurnBluetooth)
     private lateinit var btnTurnBluetooth: TextView
+
+    @ViewInject(id = R.id.btnConfigureWhiteList)
+    private lateinit var btnConfigureWhiteList: TextView
 
     @ViewInject(id = R.id.btnSelectDevice)
     private lateinit var btnSelectDevice: TextView
@@ -90,7 +99,7 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_bluetooth_main)
         proceedActivityCreation()
-        //SdkContext.performInsecureSppConnection = false
+        SdkContext.performInsecureSppConnection = false
         mChkOldFirmware.setOnCheckedChangeListener { buttonView, isChecked ->
             SdkContext.isOldFirmware = isChecked
         }
@@ -142,11 +151,6 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_bluetooth_main, menu)
-        if(mLayConnect.isVisible)
-        {
-            menu.findItem(R.id.menu_id_command_list).isVisible = false
-            menu.findItem(R.id.menu_id_clear_output).isVisible = false
-        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -182,6 +186,7 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
         AppLogUtils.sysLog("Start to connect device")
         val device = mBluetoothAdapter!!.getRemoteDevice(selectedDeviceAddress)
         bluetoothConnectSession.bluetoothDeviceToConnect = device
+        bluetoothConnectSession.deviceType = selectedDeviceType
         bluetoothConnectSession.connect()
     }
 
@@ -198,7 +203,6 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
                                 btnSelectDevice.isEnabled = false
                                 mLayConnect.visibility = View.GONE
                                 mLaySetting.visibility = View.VISIBLE
-                                invalidateOptionsMenu()
                             }
 
                             override fun onConnectFailure(errorMessage: String) {
@@ -293,6 +297,9 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH_SETTINGS)
         }
+        btnConfigureWhiteList.setOnClickListener {
+           configureWhitelist()
+        }
         btnSelectDevice.setOnClickListener {
             btnSelectDevice.isEnabled = false
             val intent = Intent(this, BluetoothDeviceListActivity::class.java)
@@ -346,6 +353,38 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
     }
 
     //endregion
+
+    /*
+   Configure device whitelist
+    */
+    private fun configureWhitelist() {
+        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val dialogView: View = inflater.inflate(R.layout.view_ble_whitelist_settings, null)
+
+        val txtDeviceWhiteList = dialogView.findViewById<AppCompatEditText>(R.id.edittext_bluetooth_device_whitelist)
+        txtDeviceWhiteList.setText(BluetoothPreferences.deviceWhiteList)
+        val ckbAutoConnect = dialogView.findViewById<AppCompatCheckBox>(R.id.checkbox_auto_connect)
+        ckbAutoConnect.isChecked = BluetoothPreferences.isAutoConnect
+
+        val builder = AlertDialog.Builder(this)
+        //builder.setTitle("Navigate to Settings>System>About>(Status)>Bluetooth Address or click the 'ABOUT PHONE' button below. Then write down the Bluetooth address. Hit back button until return to this screen.Then type the address below.")
+        builder.setView(dialogView)
+        // Set up the buttons
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
+            try {
+                BluetoothPreferences.isAutoConnect = ckbAutoConnect.isChecked
+                BluetoothPreferences.deviceWhiteList = txtDeviceWhiteList.textTrim
+            } catch (e: Exception) {
+                e.printStackTrace()
+                MessageBox.showWarningMessage(this, e.message.ifNullTrim())
+            }
+        }
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.cancel()
+        }
+        val dialog = builder.create()
+        dialog.show()
+    }
 
     private fun proceedActivityCreation() {
         mLayConnect.visibility = View.VISIBLE

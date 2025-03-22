@@ -22,6 +22,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.generalscan.scannersdk.core.basic.consts.SdkConstants
 import com.generalscan.scannersdk.core.session.bluetooth.utils.BluetoothUtils
 import com.generalscan.sdkapp.R
 import com.generalscan.sdkapp.databinding.DeviceListBinding
@@ -55,7 +56,7 @@ class BluetoothSppDeviceListFragment : Fragment() {
 
         val intent = Intent()
         intent.putExtra("Address", device.address)
-        intent.putExtra("DeviceType", "SPP")
+        intent.putExtra("DeviceType", SdkConstants.BLUETOOTH_DEVICE_TYPE_SPP)
         requireActivity().setResult(Activity.RESULT_OK, intent)
         requireActivity().finish()
     }
@@ -128,6 +129,7 @@ class BluetoothSppDeviceListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = DeviceListBinding.inflate(inflater, container, false)
+        binding.edittextSearch.isVisible = false
         return binding.root
     }
 
