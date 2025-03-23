@@ -8,8 +8,8 @@ android {
         applicationId "com.generalscan.sdkapp"
         minSdkVersion sdkMinimumVersion
         targetSdkVersion sdkTargetVersion
-        versionCode 110
-        versionName "1.1.0"
+        versionCode 117
+        versionName "1.1.7"
     }
     if (project.hasProperty('devBuild')){
         aaptOptions.cruncherEnabled = false
