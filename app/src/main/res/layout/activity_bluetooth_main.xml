@@ -62,7 +62,6 @@
             android:background="@drawable/bg_menu_normal"
             android:orientation="vertical"
             android:padding="20dp"
-            android:visibility="gone"
             >
 
 
@@ -127,7 +126,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:layout_weight="1"
-                android:text="@string/step_2"
+                android:text="@string/step_3"
                 android:textColor="#cccccc"
                 android:textSize="22sp" />
 

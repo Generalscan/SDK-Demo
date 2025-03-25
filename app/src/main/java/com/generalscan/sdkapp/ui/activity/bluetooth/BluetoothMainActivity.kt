@@ -7,6 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.Menu
@@ -18,6 +20,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.AppCompatEditText
 import com.generalscan.scannersdk.core.basic.SdkContext
+import com.generalscan.scannersdk.core.basic.consts.SdkConstants
 import com.generalscan.scannersdk.core.basic.interfaces.BluetoothPairListener
 import com.generalscan.scannersdk.core.basic.interfaces.CommunicateListener
 import com.generalscan.scannersdk.core.basic.interfaces.IConnectSession
@@ -32,6 +35,7 @@ import com.generalscan.sdkapp.support.kotlinext.ifNullTrim
 import com.generalscan.sdkapp.support.kotlinext.textTrim
 import com.generalscan.sdkapp.support.pref.BluetoothPreferences
 import com.generalscan.sdkapp.support.utils.AppLogUtils
+import com.generalscan.sdkapp.support.utils.LeUtils
 import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.support.utils.PermissionUtils
 import com.generalscan.sdkapp.system.base.AppContext
@@ -184,10 +188,17 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
 
     private fun connectDevice() {
         AppLogUtils.sysLog("Start to connect device")
-        val device = mBluetoothAdapter!!.getRemoteDevice(selectedDeviceAddress)
-        bluetoothConnectSession.bluetoothDeviceToConnect = device
-        bluetoothConnectSession.deviceType = selectedDeviceType
-        bluetoothConnectSession.connect()
+
+        if(bluetoothConnectSession.isConnected)
+        {
+            bluetoothConnectSession.disconnect()
+        }
+        Handler(Looper.getMainLooper()).postDelayed({
+            val device = mBluetoothAdapter!!.getRemoteDevice(selectedDeviceAddress)
+            bluetoothConnectSession.bluetoothDeviceToConnect = device
+            bluetoothConnectSession.deviceType = selectedDeviceType
+            bluetoothConnectSession.connect()
+        }, 500)
     }
 
     ///private fun
@@ -203,6 +214,10 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
                                 btnSelectDevice.isEnabled = false
                                 mLayConnect.visibility = View.GONE
                                 mLaySetting.visibility = View.VISIBLE
+                                if(selectedDeviceType == SdkConstants.BLUETOOTH_DEVICE_TYPE_BLE)
+                                {
+                                    BluetoothPreferences.lastConenctedDeviceAddress = selectedDeviceAddress
+                                }
                             }
 
                             override fun onConnectFailure(errorMessage: String) {
@@ -298,7 +313,7 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
             startActivityForResult(enableBtIntent, REQUEST_BLUETOOTH_SETTINGS)
         }
         btnConfigureWhiteList.setOnClickListener {
-           configureWhitelist()
+            LeUtils.configureWhitelist(this)
         }
         btnSelectDevice.setOnClickListener {
             btnSelectDevice.isEnabled = false
@@ -354,37 +369,7 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
 
     //endregion
 
-    /*
-   Configure device whitelist
-    */
-    private fun configureWhitelist() {
-        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val dialogView: View = inflater.inflate(R.layout.view_ble_whitelist_settings, null)
 
-        val txtDeviceWhiteList = dialogView.findViewById<AppCompatEditText>(R.id.edittext_bluetooth_device_whitelist)
-        txtDeviceWhiteList.setText(BluetoothPreferences.deviceWhiteList)
-        val ckbAutoConnect = dialogView.findViewById<AppCompatCheckBox>(R.id.checkbox_auto_connect)
-        ckbAutoConnect.isChecked = BluetoothPreferences.isAutoConnect
-
-        val builder = AlertDialog.Builder(this)
-        //builder.setTitle("Navigate to Settings>System>About>(Status)>Bluetooth Address or click the 'ABOUT PHONE' button below. Then write down the Bluetooth address. Hit back button until return to this screen.Then type the address below.")
-        builder.setView(dialogView)
-        // Set up the buttons
-        builder.setPositiveButton(android.R.string.ok) { _, _ ->
-            try {
-                BluetoothPreferences.isAutoConnect = ckbAutoConnect.isChecked
-                BluetoothPreferences.deviceWhiteList = txtDeviceWhiteList.textTrim
-            } catch (e: Exception) {
-                e.printStackTrace()
-                MessageBox.showWarningMessage(this, e.message.ifNullTrim())
-            }
-        }
-        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
-            dialog.cancel()
-        }
-        val dialog = builder.create()
-        dialog.show()
-    }
 
     private fun proceedActivityCreation() {
         mLayConnect.visibility = View.VISIBLE

@@ -16,5 +16,9 @@ class BluetoothPreferences : BasePreferences() {
         var isAutoConnect: Boolean
             get() = getBoolean("IsBluetoothDeviceAutoConnect", true)
             set(value) = putBoolean("IsBluetoothDeviceAutoConnect", value)
+
+        var lastConenctedDeviceAddress: String
+            get() = getString("BluetoothLastConenctedDeviceAddress")
+            set(value) = putString("BluetoothLastConenctedDeviceAddress", value)
     }
 }

@@ -86,8 +86,18 @@ class BluetoothBleDeviceListFragment :Fragment()  {
                         firstEmptyNameIndex = 0
                     deviceList.add(firstEmptyNameIndex, result.device)
                 }
+
                 requireActivity().runOnUiThread{
                     listAdapter.notifyDataSetChanged()
+                }
+
+                //if the current device is the last connected device, stop discovery and connect to it
+                if(
+                    BluetoothPreferences.deviceWhiteList.isNotBlank()
+                    && BluetoothPreferences.isAutoConnect
+                    && result.device.address == BluetoothPreferences.lastConenctedDeviceAddress
+                ) {
+                    stopDiscovery()
                 }
             }
         }
@@ -253,6 +263,7 @@ class BluetoothBleDeviceListFragment :Fragment()  {
         if (!scanning) { // Stops scanning after a pre-defined scan period.
             scanning = true
             val filters = ArrayList<ScanFilter>()
+            //if has white list, the add the device name to the BLE scan filter
             val hasWhiteList = BluetoothPreferences.deviceWhiteList.isNotBlank()
             var scanPeriod = SCAN_PERIOD
             if(hasWhiteList) {
@@ -279,7 +290,6 @@ class BluetoothBleDeviceListFragment :Fragment()  {
                 .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
                 .build()
             bluetoothLeScanner.startScan(filters, settings, leScanCallback)
-
             Handler(Looper.getMainLooper()).postDelayed({
                 stopDiscovery()
             }, scanPeriod)
@@ -295,11 +305,11 @@ class BluetoothBleDeviceListFragment :Fragment()  {
         binding.buttonScan.setText(R.string.start_scan)
         binding.progressBar.visibility = View.GONE
 
-        //If there is whitelist and auto connect
+        //If there is whitelist and auto connect or found the last connected device, do auto connect
         if(BluetoothPreferences.deviceWhiteList.isNotBlank() && BluetoothPreferences.isAutoConnect)
         {
             Handler(Looper.getMainLooper()).postDelayed({
-                if(deviceList.size==1)
+                if(deviceList.size==1 || deviceList.any { it.address == BluetoothPreferences.lastConenctedDeviceAddress })
                 {
                     selectDevice(deviceList.first())
                 }
@@ -321,11 +331,13 @@ class BluetoothBleDeviceListFragment :Fragment()  {
             false
         }
 
-        val intent = Intent()
-        intent.putExtra("Address", device.address)
-        intent.putExtra("DeviceType", SdkConstants.BLUETOOTH_DEVICE_TYPE_BLE)
-        requireActivity().setResult(Activity.RESULT_OK, intent)
-        requireActivity().finish()
+        if(isAdded) {
+            val intent = Intent()
+            intent.putExtra("Address", device.address)
+            intent.putExtra("DeviceType", SdkConstants.BLUETOOTH_DEVICE_TYPE_BLE)
+            requireActivity().setResult(Activity.RESULT_OK, intent)
+            requireActivity().finish()
+        }
     }
 
     inner class DeviceListAdapter(context: Context) : BaseAdapter(), Filterable {

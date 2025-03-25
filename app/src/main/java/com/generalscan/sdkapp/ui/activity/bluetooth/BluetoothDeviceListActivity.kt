@@ -25,6 +25,7 @@ import com.generalscan.sdkapp.R
 import com.generalscan.sdkapp.support.kotlinext.ifNullTrim
 import com.generalscan.sdkapp.support.kotlinext.textTrim
 import com.generalscan.sdkapp.support.pref.BluetoothPreferences
+import com.generalscan.sdkapp.support.utils.LeUtils
 import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.ui.activity.base.BaseActivity
 import com.generalscan.sdkapp.ui.fragments.BluetoothBleDeviceListFragment
@@ -65,7 +66,7 @@ class BluetoothDeviceListActivity : BaseActivity() {
                 true
             }
             R.id.menu_id_whitelist -> {
-                configureWhitelist()
+                LeUtils.configureWhitelist(this)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -77,37 +78,7 @@ class BluetoothDeviceListActivity : BaseActivity() {
         mayRequestLocation()
     }
 
-    /*
-   Configure device whitelist
-    */
-    private fun configureWhitelist() {
-        val inflater = this.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val dialogView: View = inflater.inflate(R.layout.view_ble_whitelist_settings, null)
 
-        val txtDeviceWhiteList = dialogView.findViewById<AppCompatEditText>(R.id.edittext_bluetooth_device_whitelist)
-        txtDeviceWhiteList.setText(BluetoothPreferences.deviceWhiteList)
-        val ckbAutoConnect = dialogView.findViewById<AppCompatCheckBox>(R.id.checkbox_auto_connect)
-        ckbAutoConnect.isChecked = BluetoothPreferences.isAutoConnect
-
-        val builder = AlertDialog.Builder(this)
-        //builder.setTitle("Navigate to Settings>System>About>(Status)>Bluetooth Address or click the 'ABOUT PHONE' button below. Then write down the Bluetooth address. Hit back button until return to this screen.Then type the address below.")
-        builder.setView(dialogView)
-        // Set up the buttons
-        builder.setPositiveButton(android.R.string.ok) { _, _ ->
-            try {
-                BluetoothPreferences.isAutoConnect = ckbAutoConnect.isChecked
-                BluetoothPreferences.deviceWhiteList = txtDeviceWhiteList.textTrim
-            } catch (e: Exception) {
-                e.printStackTrace()
-                MessageBox.showWarningMessage(this, e.message.ifNullTrim())
-            }
-        }
-        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
-            dialog.cancel()
-        }
-        val dialog = builder.create()
-        dialog.show()
-    }
     private fun mayRequestLocation() {
         if (Build.VERSION.SDK_INT >= 23) {
             val checkCallPhonePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
