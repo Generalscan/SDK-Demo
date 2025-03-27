@@ -244,7 +244,7 @@ class BluetoothSppDeviceListFragment : Fragment() {
 
     inner class DeviceListAdapter(context: Context) : BaseAdapter() {
         private val mInflater: LayoutInflater
-        private val listViewResourceId = R.layout.device_name
+        private val listViewResourceId = R.layout.view_item_device_name
 
         init {
             mInflater = LayoutInflater.from(context)

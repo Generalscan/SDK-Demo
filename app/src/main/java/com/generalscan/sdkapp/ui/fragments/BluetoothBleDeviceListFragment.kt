@@ -27,7 +27,6 @@ import android.widget.Filter
 import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.generalscan.scannersdk.core.basic.consts.SdkConstants
@@ -41,34 +40,53 @@ import java.util.ArrayList
 import java.util.UUID
 
 @SuppressLint("MissingPermission")
-class BluetoothBleDeviceListFragment :Fragment()  {
+class BluetoothBleDeviceListFragment(val disableAutoConnect: Boolean) : Fragment() {
     private var _binding: DeviceListBinding? = null
     private val binding get() = _binding!!
+
     //region bluetooth
-    private lateinit var bluetoothLeScanner :BluetoothLeScanner
+    private lateinit var bluetoothLeScanner: BluetoothLeScanner
+
 
     private val deviceList = ArrayList<BluetoothDevice>()
     private lateinit var listAdapter: DeviceListAdapter
+
     // Member fields
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var scanning = false
 
+
+    private val shouldAutoConnect: Boolean
+        get() {
+            return BluetoothPreferences.deviceWhiteList.isNotBlank() &&
+                    BluetoothPreferences.isAutoConnect && !disableAutoConnect
+        }
     // The on-click listener for all devices in the ListViews
 
-    private val mDeviceClickListener = AdapterView.OnItemClickListener { adapterView, view, position, id ->
-        val device = listAdapter.getItem(position)
-        // Cancel discovery because it's costly and we're about to connect
-        if (bluetoothAdapter!!.isDiscovering)
-            bluetoothAdapter!!.cancelDiscovery()
+    private val mDeviceClickListener =
+        AdapterView.OnItemClickListener { adapterView, view, position, id ->
+            try {
+                if (isAdded) {
+                    val device = listAdapter.getItem(position)
+                    // Cancel discovery because it's costly and we're about to connect
+                    stopDiscovery(false)
+                    selectDevice(device)
+                }
+            }
+            catch (e: Exception)
+            {
+                e.printStackTrace()
+                AppLogUtils.logError("On bluetooth LE device click", e)
+                MessageBox.showToastMessage(requireContext(), e.message.ifNullTrim())
+            }
 
-        selectDevice(device)
-    }
+        }
 
 
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            if(!deviceList.contains(result.device)) {
+            if (!deviceList.contains(result.device)) {
                 /*
                 if(result.device.address.uppercase().endsWith("6D:94"))
                 {
@@ -82,20 +100,18 @@ class BluetoothBleDeviceListFragment :Fragment()  {
                     deviceList.add(result.device)
                 else {
                     var firstEmptyNameIndex = deviceList.indexOfFirst { it.name.isNullOrBlank() }
-                    if(firstEmptyNameIndex<0)
+                    if (firstEmptyNameIndex < 0)
                         firstEmptyNameIndex = 0
                     deviceList.add(firstEmptyNameIndex, result.device)
                 }
 
-                requireActivity().runOnUiThread{
+                requireActivity().runOnUiThread {
                     listAdapter.notifyDataSetChanged()
                 }
 
                 //if the current device is the last connected device, stop discovery and connect to it
-                if(
-                    BluetoothPreferences.deviceWhiteList.isNotBlank()
-                    && BluetoothPreferences.isAutoConnect
-                    && result.device.address == BluetoothPreferences.lastConenctedDeviceAddress
+                if (
+                    shouldAutoConnect  && result.device.address == BluetoothPreferences.lastConenctedDeviceAddress
                 ) {
                     stopDiscovery()
                 }
@@ -119,6 +135,7 @@ class BluetoothBleDeviceListFragment :Fragment()  {
         super.onCreate(savedInstanceState)
 
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -130,7 +147,8 @@ class BluetoothBleDeviceListFragment :Fragment()  {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true) // Enable the options menu in this fragment
-        val bluetoothManager = requireContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothManager =
+            requireContext().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
         bluetoothLeScanner = bluetoothAdapter!!.bluetoothLeScanner
         binding.edittextSearch.addTextChangedListener(object : TextWatcher {
@@ -149,11 +167,13 @@ class BluetoothBleDeviceListFragment :Fragment()  {
         })
         scanDevices()
     }
+
     override fun onDestroy() {
         super.onDestroy()
 
 
     }
+
     internal var refreshList: Runnable = Runnable {
         listAdapter.filter?.filter(binding.edittextSearch.text.toString())
     }
@@ -169,7 +189,7 @@ class BluetoothBleDeviceListFragment :Fragment()  {
         // Initialize the button to perform device discovery
 
 
-         binding.buttonScan.setOnClickListener {
+        binding.buttonScan.setOnClickListener {
             if (scanning) {
                 stopDiscovery()
             } else {
@@ -185,14 +205,15 @@ class BluetoothBleDeviceListFragment :Fragment()  {
 
         binding.listDevices.adapter = listAdapter
         binding.listDevices.onItemClickListener = mDeviceClickListener
-        binding.listDevices.setOnItemLongClickListener{ _, _, position, _ ->
-            val whiteList = BluetoothPreferences.deviceWhiteList.split("\n").map { it.trim() }.toMutableList().also {
-                it.remove("")
-            }
+        binding.listDevices.setOnItemLongClickListener { _, _, position, _ ->
+            val whiteList =
+                BluetoothPreferences.deviceWhiteList.split("\n").map { it.trim() }.toMutableList()
+                    .also {
+                        it.remove("")
+                    }
             val device = listAdapter.getItem(position)
             var deviceName = device.name.ifNullTrim()
-            if(whiteList.contains(deviceName))
-            {
+            if (whiteList.contains(deviceName)) {
                 MessageBox.showConfirmBox(
                     requireActivity(),
                     "Remove device name from whitelist?",
@@ -209,9 +230,7 @@ class BluetoothBleDeviceListFragment :Fragment()  {
 
                     }, getString(R.string.no)
                 )
-            }
-            else
-            {
+            } else {
                 MessageBox.showConfirmBox(
                     requireActivity(),
                     "Add device name to whitelist?",
@@ -248,7 +267,7 @@ class BluetoothBleDeviceListFragment :Fragment()  {
     // Start device discover with the BluetoothAdapter
     @SuppressLint("NewApi")
     private fun doDiscovery() {
-        if(scanning)
+        if (scanning)
             return
         initDeviceList()
         if (D) Log.d(TAG, "doDiscovery()")
@@ -266,23 +285,22 @@ class BluetoothBleDeviceListFragment :Fragment()  {
             //if has white list, the add the device name to the BLE scan filter
             val hasWhiteList = BluetoothPreferences.deviceWhiteList.isNotBlank()
             var scanPeriod = SCAN_PERIOD
-            if(hasWhiteList) {
+            if (hasWhiteList) {
                 val whiteList = BluetoothPreferences.deviceWhiteList.split("\n").map { it.trim() }
                     .toMutableList().also {
-                    it.remove("")
-                }
+                        it.remove("")
+                    }
                 whiteList.forEach {
-                    filters.add(ScanFilter.Builder()
-                        .setDeviceName(it) // Filter by device name
-                        .build()
+                    filters.add(
+                        ScanFilter.Builder()
+                            .setDeviceName(it) // Filter by device name
+                            .build()
                     )
                 }
                 //reduce scan period to 1 second for whitelist auto connect
-                if(BluetoothPreferences.isAutoConnect) {
+                if (shouldAutoConnect) {
                     scanPeriod = 1000
-                }
-                else
-                {
+                } else {
                     scanPeriod = 3000
                 }
             }
@@ -299,18 +317,16 @@ class BluetoothBleDeviceListFragment :Fragment()  {
     }
 
     @SuppressLint("NewApi")
-    private fun stopDiscovery() {
+    private fun stopDiscovery(checkAutoConnect: Boolean = true) {
         bluetoothLeScanner.stopScan(leScanCallback)
         scanning = false
         binding.buttonScan.setText(R.string.start_scan)
         binding.progressBar.visibility = View.GONE
 
         //If there is whitelist and auto connect or found the last connected device, do auto connect
-        if(BluetoothPreferences.deviceWhiteList.isNotBlank() && BluetoothPreferences.isAutoConnect)
-        {
+        if (checkAutoConnect && shouldAutoConnect) {
             Handler(Looper.getMainLooper()).postDelayed({
-                if(deviceList.size==1 || deviceList.any { it.address == BluetoothPreferences.lastConenctedDeviceAddress })
-                {
+                if (deviceList.any { it.address == BluetoothPreferences.lastConenctedDeviceAddress }) {
                     selectDevice(deviceList.first())
                 }
             }, 200)
@@ -318,20 +334,7 @@ class BluetoothBleDeviceListFragment :Fragment()  {
     }
 
     private fun selectDevice(device: BluetoothDevice) {
-        // For SPP check, you need to look at supported services
-        // SPP uses the UUID: 00001101-0000-1000-8000-00805F9B34FB
-        val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-
-        // To check SPP support, you'd typically connect and fetch service records
-        // This is a simplification - in real code you'd do this asynchronously
-        val sppSupported = try {
-            val uuids = device.uuids
-            uuids?.any { it.uuid == SPP_UUID } ?: false
-        } catch (e: Exception) {
-            false
-        }
-
-        if(isAdded) {
+        if (isAdded) {
             val intent = Intent()
             intent.putExtra("Address", device.address)
             intent.putExtra("DeviceType", SdkConstants.BLUETOOTH_DEVICE_TYPE_BLE)
@@ -342,9 +345,10 @@ class BluetoothBleDeviceListFragment :Fragment()  {
 
     inner class DeviceListAdapter(context: Context) : BaseAdapter(), Filterable {
         private val mInflater: LayoutInflater
-        private val listViewResourceId = R.layout.device_name
+        private val listViewResourceId = R.layout.view_item_device_name
         var dataList: List<BluetoothDevice>
             private set
+
         init {
             mInflater = LayoutInflater.from(context)
             dataList = deviceList
@@ -385,7 +389,8 @@ class BluetoothBleDeviceListFragment :Fragment()  {
                 holder.deviceName!!.text = deviceName
                 holder.deviceAddress!!.text = device.address
                 if (!deviceName.isNullOrBlank() &&
-                    (device.name.indexOf("GS-BarcodeScanner") > -1 || device.name.indexOf("Generalscan SPP Barcode Scanner") > -1)) {
+                    (device.name.indexOf("GS-BarcodeScanner") > -1 || device.name.indexOf("Generalscan SPP Barcode Scanner") > -1)
+                ) {
                     holder.deviceIcon!!.setImageResource(R.drawable.ic_scanner)
                 } else {
                     holder.deviceIcon!!.setImageResource(R.drawable.ic_bluetooth)
@@ -408,7 +413,10 @@ class BluetoothBleDeviceListFragment :Fragment()  {
         override fun getFilter(): Filter? {
             val filter = object : Filter() {
 
-                override fun publishResults(constraint: CharSequence, results: Filter.FilterResults) {
+                override fun publishResults(
+                    constraint: CharSequence,
+                    results: Filter.FilterResults
+                ) {
                     dataList = results.values as List<BluetoothDevice>
                     notifyDataSetChanged()
                 }
@@ -420,7 +428,9 @@ class BluetoothBleDeviceListFragment :Fragment()  {
                     val FilteredArrayNames = ArrayList<BluetoothDevice>()
                     constraint = constraint.ifNullTrim()
                     for (i in deviceList.indices) {
-                        if (deviceList[i].name.ifNullTrim().contains(constraint, ignoreCase = true)) {
+                        if (deviceList[i].name.ifNullTrim()
+                                .contains(constraint, ignoreCase = true)
+                        ) {
                             FilteredArrayNames.add(deviceList[i])
                         }
                     }
@@ -441,6 +451,7 @@ class BluetoothBleDeviceListFragment :Fragment()  {
             var deviceStatus: ImageView? = null
         }
     }
+
 
     companion object {
         // Debugging

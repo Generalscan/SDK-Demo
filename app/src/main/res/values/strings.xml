@@ -6,10 +6,10 @@
     <!-- USB -->
     <!-- 列表 -->
     <string name="action_grant_permission">Grant permission</string>
-    <string name="app_name">SDK App</string>
+    <string name="app_name">GS SDK Demo</string>
     <string name="B_Clear">Clear</string>
     <string name="B_Close">Disconnect</string>
-    <string name="B_CommandList">Command List</string>
+    <string name="B_CommandList">Commands</string>
     <string name="B_Connect">Connect</string>
     <string name="B_GoScanQR">QR Code</string>
     <string name="B_GoSelect">Go Select</string>
@@ -17,7 +17,7 @@
     <string name="B_HadSelect">Selected</string>
     <string name="B_HadTurnOn">Turned On</string>
     <string name="B_Open">Open the Bluetooth and pairing</string>
-    <string name="B_Select">Select device</string>
+    <string name="B_Select">Select device\nLong press to select device without auto connect</string>
     <string name="B_Send">Send</string>
     <string name="B_SendContent">Send Command</string>
     <string name="B_TurnOnBluetooth">Turn on Bluetooth</string>
@@ -31,10 +31,10 @@
     <string name="cant_read_folder">Cannot read folder</string>
     <string name="check_update">Check Update</string>
     <string name="checking_update">Checking for update</string>
-    <string name="clear_output">Clear</string>
+    <string name="clear_output">Clear Out</string>
     <string name="command_and_settings">Command &amp; Settings</string>
     <string name="connect_to_bt_scanner_fail">Connect to bluetooth device failed!</string>
-    <string name="connect_to_device_timeout">Conenct to device timeout, please make sure dieve has been turned on and stay connectable!</string>
+    <string name="connect_to_device_timeout">Connect to device timeout, please make sure device has been turned on and stay connectable!</string>
     <string name="data_received">Data Received</string>
     <string name="data_receiving">Data Receiving</string>
     <string name="device_response_data">Device Data</string>

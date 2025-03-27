@@ -3,22 +3,16 @@ package com.generalscan.sdkapp.ui.activity.bluetooth
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
-import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.AppCompatCheckBox
-import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.view.isVisible
 import com.generalscan.scannersdk.core.basic.SdkContext
 import com.generalscan.scannersdk.core.basic.consts.SdkConstants
 import com.generalscan.scannersdk.core.basic.interfaces.BluetoothPairListener
@@ -28,16 +22,13 @@ import com.generalscan.scannersdk.core.basic.interfaces.SessionListener
 import com.generalscan.scannersdk.core.session.bluetooth.BluetoothSettings
 import com.generalscan.scannersdk.core.session.bluetooth.connect.BluetoothConnectSession
 import com.generalscan.scannersdk.core.session.bluetooth.utils.BluetoothPairCtl
-import com.generalscan.scannersdk.core.session.bluetooth.utils.BluetoothUtils
 import com.generalscan.sdkapp.R
 import com.generalscan.sdkapp.support.inject.ViewInject
 import com.generalscan.sdkapp.support.kotlinext.ifNullTrim
-import com.generalscan.sdkapp.support.kotlinext.textTrim
 import com.generalscan.sdkapp.support.pref.BluetoothPreferences
 import com.generalscan.sdkapp.support.utils.AppLogUtils
 import com.generalscan.sdkapp.support.utils.LeUtils
 import com.generalscan.sdkapp.support.utils.MessageBox
-import com.generalscan.sdkapp.support.utils.PermissionUtils
 import com.generalscan.sdkapp.system.base.AppContext
 import com.generalscan.sdkapp.ui.activity.base.BaseBluetoothActivity
 import com.generalscan.sdkapp.ui.widgets.BluetoothCommandListDialog
@@ -155,6 +146,15 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_bluetooth_main, menu)
+        if(mLayConnect.isVisible)
+        {
+            menu.findItem(R.id.menu_id_clear_output).isVisible = false
+            menu.findItem(R.id.menu_id_command_list).isVisible = false
+        }
+        else
+        {
+
+        }
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -218,6 +218,7 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
                                 {
                                     BluetoothPreferences.lastConenctedDeviceAddress = selectedDeviceAddress
                                 }
+                                invalidateOptionsMenu()
                             }
 
                             override fun onConnectFailure(errorMessage: String) {
@@ -322,6 +323,13 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
         }
 
 
+        btnSelectDevice.setOnLongClickListener {
+            btnSelectDevice.isEnabled = false
+            val intent = Intent(this, BluetoothDeviceListActivity::class.java)
+            intent.putExtra(BluetoothDeviceListActivity.EXTRA_DISABLE_AUTO_CONNECT, true)
+            startActivityForResult(intent, REQUEST_SELECT_BLUETOOTH_DEVICE)
+            true
+        }
         // 发送命令
         // Send command
         myBtnSendContent.setOnClickListener({

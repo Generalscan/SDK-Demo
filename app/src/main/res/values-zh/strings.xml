@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">SDK 应用</string>
+    <string name="app_name">GS SDK Demo</string>
 
     <string name="dialog_info_title">信息</string>
     <string name="dialog_confirm_title">确认</string>

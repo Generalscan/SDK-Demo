@@ -8,13 +8,6 @@ public class StringComparator implements   Comparator {
     }
 
 
-    /**
-     * compare
-     * 实现排序。
-     * @param o1 Object
-     * @param o2 Object
-     * @return int
-     */
     public int compare(Object o1, Object o2) {
 
         String catalog0 = "";

@@ -2,31 +2,21 @@ package com.generalscan.sdkapp.ui.activity.bluetooth
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.AppCompatCheckBox
-import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.generalscan.sdkapp.R
-import com.generalscan.sdkapp.support.kotlinext.ifNullTrim
-import com.generalscan.sdkapp.support.kotlinext.textTrim
-import com.generalscan.sdkapp.support.pref.BluetoothPreferences
-import com.generalscan.sdkapp.support.utils.LeUtils
-import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.ui.activity.base.BaseActivity
 import com.generalscan.sdkapp.ui.fragments.BluetoothBleDeviceListFragment
 import com.generalscan.sdkapp.ui.fragments.BluetoothSppDeviceListFragment
@@ -39,7 +29,7 @@ class BluetoothDeviceListActivity : BaseActivity() {
 
     private lateinit var tabLayout:TabLayout
     private lateinit var viewPager:ViewPager2
-
+    private var disableAutoConnect = false
 
     //public static BluetoothSocket btSocket = null;
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +37,7 @@ class BluetoothDeviceListActivity : BaseActivity() {
         setContentView(R.layout.activity_bluetooth_device_list)
         tabLayout = findViewById(R.id.tabLayout)
         viewPager = findViewById(R.id.pager)
+        disableAutoConnect = intent.getBooleanExtra(EXTRA_DISABLE_AUTO_CONNECT, false)
         mayRequestLocation()
     }
 
@@ -66,7 +57,9 @@ class BluetoothDeviceListActivity : BaseActivity() {
                 true
             }
             R.id.menu_id_whitelist -> {
-                LeUtils.configureWhitelist(this)
+                //configureWhitelist(this)
+                val newIntent = Intent(this, BluetoothLeWhitelistSettingsActivity::class.java)
+                startActivity(newIntent)
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -109,7 +102,7 @@ class BluetoothDeviceListActivity : BaseActivity() {
     }
 
 
-    class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) :
+    inner class ViewPagerAdapter(fragmentManager: FragmentManager, lifecycle: Lifecycle) :
         FragmentStateAdapter(fragmentManager, lifecycle) {
 
         private val NUM_TABS = 2
@@ -119,14 +112,18 @@ class BluetoothDeviceListActivity : BaseActivity() {
 
         override fun createFragment(position: Int): Fragment {
             return when (position) {
-                0 -> BluetoothBleDeviceListFragment()
+                0 -> BluetoothBleDeviceListFragment(disableAutoConnect)
                 else -> BluetoothSppDeviceListFragment()
             }
         }
     }
+
+
     companion object {
 
         private val REQUEST_FINE_LOCATION = 0
+
+        const val EXTRA_DISABLE_AUTO_CONNECT = "AutoConnect"
     }
 
 }

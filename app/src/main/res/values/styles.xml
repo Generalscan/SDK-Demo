@@ -9,7 +9,14 @@
         <item name="elevation">0dp</item>
     </style>
 
-
+    <style name="Theme.FloatWindow" parent="AppTheme">
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
 
     <!-- Flat Button -->
     <style name="flat_button_base" parent="Widget.AppCompat.Button.Borderless">
@@ -23,6 +30,17 @@
     <style name="flat_button" parent="flat_button_base">
         <item name="android:background">@drawable/bg_flat_button</item>
     </style>
+    <style name="flat_button_transparent" parent="flat_button_base">
+        <item name="android:background">#00000000</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAppearance">?android:textAppearanceMedium</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_marginLeft">15dp</item>
+        <item name="android:layout_marginRight">15dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+    </style>
     <style name="flat_button_danger" parent="flat_button_base">
         <item name="android:background">@drawable/bg_flat_button_danger</item>
     </style>
@@ -35,4 +53,6 @@
     <style name="flat_button_warning" parent="flat_button_base">
         <item name="android:background">@drawable/bg_flat_button_warning</item>
     </style>
+
+    <color name="transparent">#00000000</color>
 </resources>

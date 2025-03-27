@@ -51,7 +51,11 @@
             android:screenOrientation="portrait" />
         <activity android:name=".ui.activity.usb.UsbHostSettingActivity" />
         <activity android:name=".ui.activity.bluetooth.BluetoothDeviceListActivity" />
-
+        <activity
+            android:name=".ui.activity.bluetooth.BluetoothLeWhitelistSettingsActivity"
+            android:theme="@style/Theme.FloatWindow"
+            android:label="Bluetooth LE Whitelist"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" />
         <activity
             android:name=".ui.activity.usb.UsbSerialMainActivity"
             android:exported="false"

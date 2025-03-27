@@ -10,9 +10,6 @@ import androidx.viewbinding.ViewBinding
 import com.generalscan.sdkapp.support.utils.Utils
 
 
-/**
- * Created by wangdan on 15-1-16.
- */
 @SuppressLint("Registered")
 abstract class BaseBindingActivity<ViewBindingType : ViewBinding>: AppCompatActivity(){
 

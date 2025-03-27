@@ -15,12 +15,12 @@ object AppLogUtils {
     //region Log functions
 
     fun sysLog(e: Throwable) {
-        Log.e("MobileFMS_Log", Utils.getErrorMessage(e))
-        Log.e("MobileFMS_Log", Utils.stackTraceToString(e))
+        Log.e("GS_SDK_DEMO_Log", Utils.getErrorMessage(e))
+        Log.e("GS_SDK_DEMO_Log", Utils.stackTraceToString(e))
     }
 
     fun sysLog(message: String) {
-        Log.e("MobileFMS_Log", message)
+        Log.e("GS_SDK_DEMO_Log", message)
     }
 
     fun logError(logTitle: String, e: Throwable) {
