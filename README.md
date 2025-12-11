@@ -190,3 +190,96 @@ bluetoothConnectSession.connect()
 //Send current bluetooth session
 bluetoothConnectSession.endSession()
 ```
+
+# Receive data from the broadcase
+Here’s how you can **receive the broadcast and retrieve the scanned data** in Kotlin.
+---
+
+## 🧩 Step 1: Create the BroadcastReceiver
+
+```kotlin
+class ScannerBroadcastReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        if (intent?.action == "generalscan.intent.action.scanner.data") {
+            val scannedData = intent.getStringExtra("GetData")
+            Log.d("ScannerReceiver", "Scanned data: $scannedData")
+
+            // You can handle the data here, e.g. update UI via LiveData or send it to a ViewModel
+        }
+    }
+}
+```
+
+---
+
+## ⚙️ Step 2: Register the Receiver in Your Activity
+
+Use **dynamic registration** (recommended) so it only listens while your Activity is active.
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+
+    private val scannerReceiver = ScannerBroadcastReceiver()
+
+    override fun onResume() {
+        super.onResume()
+        val filter = IntentFilter("generalscan.intent.action.scanner.data")
+        registerReceiver(scannerReceiver, filter)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(scannerReceiver)
+    }
+}
+```
+
+---
+
+## 🧠 Step 3: Use the Retrieved Data
+
+If you want to update your UI directly when data is received, you can use an **anonymous receiver** inside your Activity instead:
+
+```kotlin
+class MainActivity : AppCompatActivity() {
+
+    private val scannerReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == "generalscan.intent.action.scanner.data") {
+                val data = intent.getStringExtra("GetData")
+                Log.d("ScannerReceiver", "Received: $data")
+                findViewById<TextView>(R.id.resultTextView).text = data
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        registerReceiver(scannerReceiver, IntentFilter("generalscan.intent.action.scanner.data"))
+    }
+
+    override fun onPause() {
+        super.onPause()
+        unregisterReceiver(scannerReceiver)
+    }
+}
+```
+
+---
+
+## ✅ Step 4: (Optional) Check if Broadcast Works
+
+You can simulate it with `adb`:
+
+```bash
+adb shell am broadcast -a generalscan.intent.action.scanner.data --es GetData "TEST12345"
+```
+
+Your app should log:
+
+```
+D/ScannerReceiver: Scanned data: TEST12345
+```
+
+---
+
