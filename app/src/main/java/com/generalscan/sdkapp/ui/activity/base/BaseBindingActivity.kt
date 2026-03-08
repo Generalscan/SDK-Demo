@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import androidx.viewbinding.ViewBinding
 import com.generalscan.sdkapp.support.utils.Utils
 
@@ -34,6 +36,11 @@ abstract class BaseBindingActivity<ViewBindingType : ViewBinding>: AppCompatActi
             _binding = setupViewBinding(layoutInflater)
             beforeCreate()
             setContentView(requireNotNull(_binding).root)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+            val upArrow = AppCompatResources.getDrawable(this, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+            upArrow?.setTint(ContextCompat.getColor(this, android.R.color.white))
+            supportActionBar?.setHomeAsUpIndicator(upArrow)
             /*
             toolbar = findViewById(R.id.toolbar)
             if (toolbar != null) {

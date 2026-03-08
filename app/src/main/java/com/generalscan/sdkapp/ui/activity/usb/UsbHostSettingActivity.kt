@@ -1,6 +1,7 @@
 package com.generalscan.sdkapp.ui.activity.usb
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -14,6 +15,7 @@ import com.generalscan.sdkapp.support.kotlinext.ifNullOrBlank
 import com.generalscan.sdkapp.support.task.AsTask
 import com.generalscan.sdkapp.support.task.CallResult
 import com.generalscan.sdkapp.support.utils.MessageBox
+import com.generalscan.sdkapp.system.pref.BarcodeBroadcastPreferences
 import com.generalscan.sdkapp.ui.activity.base.BaseActivity
 
 class UsbHostSettingActivity : BaseActivity(),  CompoundButton.OnCheckedChangeListener {
@@ -220,6 +222,14 @@ class UsbHostSettingActivity : BaseActivity(),  CompoundButton.OnCheckedChangeLi
                             }
                             override fun onDataReceived(data: String) {
                                 mTvData.append(data)
+                                if(BarcodeBroadcastPreferences.enableBroadcast)
+                                {
+                                    val intent = Intent()
+                                    intent.action = BarcodeBroadcastPreferences.intentAction
+                                    intent.putExtra(BarcodeBroadcastPreferences.intentStringExtra, data)
+                                    intent.putExtra(BarcodeBroadcastPreferences.intentRawExtra, data.toByteArray())
+                                    sendBroadcast(intent)
+                                }
                             }
 
                             override fun onConnectFailure(errorMessage: String) {

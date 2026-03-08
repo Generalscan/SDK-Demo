@@ -9,6 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import com.generalscan.sdkapp.support.inject.InjectUtility
 import java.util.HashMap
 
@@ -27,6 +29,11 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        val upArrow = AppCompatResources.getDrawable(this, androidx.appcompat.R.drawable.abc_ic_ab_back_material)
+        upArrow?.setTint(ContextCompat.getColor(this, android.R.color.white))
+        supportActionBar?.setHomeAsUpIndicator(upArrow)
         onBackPressedDispatcher.addCallback(this /* lifecycle owner */, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 // Back is pressed... Finishing the activity

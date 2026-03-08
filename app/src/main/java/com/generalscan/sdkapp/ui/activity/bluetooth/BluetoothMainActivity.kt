@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.isVisible
 import com.generalscan.scannersdk.core.basic.SdkContext
+import com.generalscan.scannersdk.core.basic.consts.SdkBroadcastConfig
 import com.generalscan.scannersdk.core.basic.consts.SdkConstants
 import com.generalscan.scannersdk.core.basic.interfaces.BluetoothPairListener
 import com.generalscan.scannersdk.core.basic.interfaces.CommunicateListener
@@ -30,6 +31,7 @@ import com.generalscan.sdkapp.support.utils.AppLogUtils
 import com.generalscan.sdkapp.support.utils.LeUtils
 import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.system.base.AppContext
+import com.generalscan.sdkapp.system.pref.BarcodeBroadcastPreferences
 import com.generalscan.sdkapp.ui.activity.base.BaseBluetoothActivity
 import com.generalscan.sdkapp.ui.widgets.BluetoothCommandListDialog
 
@@ -267,6 +269,14 @@ class BluetoothMainActivity : BaseBluetoothActivity() {
                                     mTxtReceiveData.append(displayData)
                                 } else {
                                     mTxtReceiveData.append(data)
+                                }
+                                if(BarcodeBroadcastPreferences.enableBroadcast)
+                                {
+                                    val intent = Intent()
+                                    intent.action = BarcodeBroadcastPreferences.intentAction
+                                    intent.putExtra(BarcodeBroadcastPreferences.intentStringExtra, data)
+                                    intent.putExtra(BarcodeBroadcastPreferences.intentRawExtra, data.toByteArray())
+                                    sendBroadcast(intent)
                                 }
                                 val scrollView = (mTxtReceiveData.parent as ScrollView)
                                 scrollView.post({ scrollView.fullScroll(View.FOCUS_DOWN) })

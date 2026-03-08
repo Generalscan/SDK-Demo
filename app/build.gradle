@@ -8,8 +8,8 @@ android {
         applicationId "com.generalscan.sdkapp"
         minSdkVersion sdkMinimumVersion
         targetSdkVersion sdkTargetVersion
-        versionCode 119
-        versionName "1.1.9"
+        versionCode 120
+        versionName "1.2.0"
     }
     if (project.hasProperty('devBuild')){
         aaptOptions.cruncherEnabled = false
@@ -56,7 +56,7 @@ dependencies {
     implementation "androidx.core:core-ktx:1.12.0"
      */
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'com.google.android.material:material:1.13.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.4'
     api files('libs/fastjson-1.1.58.android.jar')
     implementation files('libs/scannersdk-release.aar')

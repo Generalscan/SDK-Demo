@@ -7,16 +7,22 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.LayoutInflater
 import androidx.core.app.ActivityCompat
 import android.view.Menu
 import android.view.MenuItem
+import com.generalscan.quickpair.ui.activity.base.BaseBindingActivity
 import com.generalscan.sdkapp.R
+import com.generalscan.sdkapp.databinding.ActivityBlueutoothLeWhitelistSettingsBinding
+import com.generalscan.sdkapp.databinding.ActivityMainBinding
+import com.generalscan.sdkapp.support.kotlinext.ifNullTrim
 import com.generalscan.sdkapp.support.task.AsTask
 import com.generalscan.sdkapp.support.task.CallResult
 import com.generalscan.sdkapp.support.utils.AppLogUtils
 import com.generalscan.sdkapp.support.utils.MessageBox
 import com.generalscan.sdkapp.support.utils.PermissionUtils
 import com.generalscan.sdkapp.system.base.AppContext
+import com.generalscan.sdkapp.system.pref.BarcodeBroadcastPreferences
 import com.generalscan.sdkapp.ui.activity.usb.UsbHostSettingActivity
 import com.generalscan.sdkapp.ui.activity.base.BaseActivity
 import com.generalscan.sdkapp.ui.activity.bluetooth.BluetoothMainActivity
@@ -24,17 +30,22 @@ import com.generalscan.sdkapp.ui.activity.usb.UsbSerialMainActivity
 import java.util.ArrayList
 
 
-class MainActivity : BaseActivity(), ActivityCompat.OnRequestPermissionsResultCallback {
+class MainActivity : BaseBindingActivity<ActivityMainBinding>(), ActivityCompat.OnRequestPermissionsResultCallback {
 
 
     private var mHasInitialized = false
     private var mHasDestroied = false
 
+    override fun setupViewBinding(inflater: LayoutInflater) = ActivityMainBinding.inflate(inflater)
 
-    //region override functions
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    override fun beforeCreate() {
+        binding.activity = this
+    }
+
+    override fun afterCreate(savedInstanceState: Bundle?) {
+        supportActionBar?.elevation = 0f
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
         permissions.clear()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -59,6 +70,7 @@ class MainActivity : BaseActivity(), ActivityCompat.OnRequestPermissionsResultCa
 
     }
 
+    //region override functions
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -137,9 +149,20 @@ class MainActivity : BaseActivity(), ActivityCompat.OnRequestPermissionsResultCa
 
     private fun proceedActivityCreation() {
         AppContext.instance.init()
-
         mHasInitialized = true
         removeOldLogs()
+        binding.checkboxEnableBroadcast.isChecked = BarcodeBroadcastPreferences.enableBroadcast
+        binding.textfieldIntentAction.editText?.setText(BarcodeBroadcastPreferences.intentAction)
+        binding.textfieldIntentStringExtra.editText?.setText(BarcodeBroadcastPreferences.intentStringExtra)
+        binding.textfieldIntentRawExtra.editText?.setText(BarcodeBroadcastPreferences.intentRawExtra)
+        binding.buttonApplyBroadcastSettings.setOnClickListener {
+            BarcodeBroadcastPreferences.enableBroadcast = binding.checkboxEnableBroadcast.isChecked
+            BarcodeBroadcastPreferences.intentAction = binding.textfieldIntentAction.editText?.text.ifNullTrim()
+            BarcodeBroadcastPreferences.intentStringExtra = binding.textfieldIntentStringExtra.editText?.text.ifNullTrim()
+            BarcodeBroadcastPreferences.intentRawExtra = binding.textfieldIntentRawExtra.editText?.text.ifNullTrim()
+            MessageBox.showToastMessage(this, "Settings saved")
+        }
+
     }
 
     private fun initBluetoothCommListener() {
